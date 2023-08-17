@@ -4,14 +4,15 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import UserSerializer, ChangePasswordSerializer
+from .serializers import UserSerializer, ChangePasswordSerializer, RegisterSerializer
 
 
 # Create your views here.
-class UserRegistrationView(GenericAPIView):
+class UserRegisterView(GenericAPIView):
+    serializer_class = RegisterSerializer
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['password'] = make_password(serializer.validated_data['password'])
             serializer.save()
