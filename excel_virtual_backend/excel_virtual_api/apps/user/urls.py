@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import UserRegisterView
+from .views import UserRegisterView, UserVerification
 
 
 urlpatterns = [
-    path('register/', UserRegisterView.as_view())
+    path('register/', UserRegisterView.as_view()),
+    path('verify/<str:id>', UserVerification.as_view()),
 ]

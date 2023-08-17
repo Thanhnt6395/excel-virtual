@@ -1,10 +1,10 @@
 from django.contrib.auth.hashers import make_password
 
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .serializers import UserSerializer, ChangePasswordSerializer, RegisterSerializer
+from .serializers import UserSerializer, ChangePasswordSerializer, RegisterSerializer, UserVerificationSerializer
 from utils.send_mail import SendMail
 
 
@@ -24,3 +24,15 @@ class UserRegisterView(GenericAPIView):
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
+      
+class UserVerification(GenericAPIView):
+    serializer_class = UserVerificationSerializer
+    
+    def patch(self, request, *args, **kwargs):
+        serializer = UserVerificationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)

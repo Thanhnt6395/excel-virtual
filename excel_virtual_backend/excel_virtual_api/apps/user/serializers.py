@@ -44,3 +44,15 @@ class ChangePasswordSerializer(serializers.Serializer):
         instance.set_password(password)
         instance.save()
         return instance
+      
+
+class UserVerificationSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    
+    def update(self, instance, validated_data):
+        user = User.objects.get(pk=validated_data.get('id'))
+        if not user:
+            raise serializers.ValidationError(_('Id not found'))
+        instance.is_active = True
+        instance.save()
+        return instance
