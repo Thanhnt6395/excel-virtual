@@ -12,12 +12,12 @@ class SendMail():
     subject = 'Email verify account'
     message = 'This is my test send mail'
     
-    def send_mail_verify(self, recipient_list, name, url):
+    def send_mail_verify(self, recipient_list, name, token):
         html_message = f"""
             <h2>Hi {name},</h2>
             <div>
                 <h4>Please click link in below to verify your account!</h4></br>
-                <a href="{url}">Link verify</a>
+                <a href="{settings.DEFAULT_HOST}api/user/verify/{token}">Link verify</a>
             </div>
         """
 

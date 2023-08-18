@@ -1,3 +1,4 @@
 excel_virtual_backend/venv
 excel_virtual_backend/excel_virtual_api/.env
 excel_virtual_backend/excel_virtual_api/apps/user/migrations/**
+.vscode
