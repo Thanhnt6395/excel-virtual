@@ -6,42 +6,42 @@
         <h3 class=" text-blue-950 font-light mb-7 text-center text-xl">Create your account</h3>
         <div class=" grid grid-cols-2 gap-x-3 gap-y-5">
           <div class=" col-span-2 relative">
-            <label for="email" :class="[showLabel.email ? 'visible absolute top-[-0.5rem] left-[1rem] bg-white px-1': 'invisible']">Email</label>
+            <label for="email" :class="[showLabel.email ? 'absolute top-[-0.75rem] left-[0.75rem] bg-white px-1': 'hidden']">Email</label>
             <input 
               type="text" name="" id="email" placeholder="Email" 
               class=" border border-gray-200 rounded w-full h-[3rem] px-3 py-2" 
               v-model="form['email']" @input="onInput">
           </div>
-          <div class=" col-span-1">
-            <label for="first_name" :class="[showLabel.first_name ? 'visible absolute top-[-0.5rem] left-[1rem] bg-white px-1': 'invisible']">First Name</label>
+          <div class=" col-span-1 relative">
+            <label for="first_name" :class="[showLabel.first_name ? ' absolute top-[-0.75rem] left-[0.75rem] bg-white px-1': 'hidden']">First Name</label>
             <input 
               type="text" name="" id="first_name" placeholder="First Name" 
               class=" border border-gray-200 rounded w-full h-[3rem] px-3 py-2" 
               v-model="form['first_name']" @input="onInput">
           </div>
-          <div class=" col-span-1">
-            <label for="last_name" :class="[showLabel.last_name ? 'visible absolute top-[-0.5rem] left-[1rem] bg-white px-1': 'invisible']">Last Name</label>
+          <div class=" col-span-1 relative">
+            <label for="last_name" :class="[showLabel.last_name ? ' absolute top-[-0.75rem] left-[0.75rem] bg-white px-1': 'hidden']">Last Name</label>
             <input 
               type="text" name="" id="last_name" placeholder="Last Name" 
               class=" border border-gray-200 rounded w-full h-[3rem] px-3 py-2" 
               v-model="form['last_name']" @input="onInput">
           </div>
-          <div class=" col-span-2">
-            <label for="password" :class="[showLabel.password ? 'visible absolute top-[-0.5rem] left-[1rem] bg-white px-1': 'invisible']">Password</label>
+          <div class=" col-span-2 relative">
+            <label for="password" :class="[showLabel.password ? ' absolute top-[-0.75rem] left-[0.75rem] bg-white px-1': 'hidden']">Password</label>
             <input 
               type="password" name="" id="password" placeholder="Password" 
               class=" border border-gray-200 rounded w-full h-[3rem] px-3 py-2" 
               v-model="form['password']" @input="onInput">
           </div>
-          <div class=" col-span-2">
-            <label for="repeat_password" :class="[showLabel.repeat_password ? 'visible absolute top-[-0.5rem] left-[1rem] bg-white px-1': 'invisible']">Repeat Password</label>
+          <div class=" col-span-2 relative">
+            <label for="repeat_password" :class="[showLabel.repeat_password ? ' absolute top-[-0.75rem] left-[0.75rem] bg-white px-1': 'hidden']">Repeat Password</label>
             <input 
               type="password" name="" id="repeat_password" placeholder="Repeat Password" 
-              class=" border border-gray-200 rounded w-full h-[3rem] px-3 py-2" 
+              class=" border border-gray-200 rounded w-full h-[3rem] px-3 py-2" :class="[!diffPassword ? 'bg-red-300' : '']" 
               v-model="form['repeat_password']" @input="onInput">
           </div>
           <div class=" col-span-1">
-            <input type="checkbox" name="" id="show-password" class=" mr-3">
+            <input type="checkbox" name="" id="show-password" class=" mr-3" v-model="showPassword">
             <label for="show-password" class="text-blue-950 font-light">Show password</label>
           </div>
           <div class=" col-span-1 flex justify-end">
@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const form = ref({})
 const showLabel = ref({
@@ -67,12 +67,31 @@ const showLabel = ref({
   password: false,
   repeat_password: false
 })
+const showPassword = ref(false)
+const diffPassword = ref(true)
 
 function onInput(e) {
   let id = e.target.id
   if (!form.value[id] || form.value[id] == '') showLabel.value[id] = false
   else showLabel.value[id] = true
 }
+
+watch(showPassword, (newValue) => {
+  if (!newValue) {
+    document.getElementById('password').setAttribute('type', 'password')
+    document.getElementById('repeat_password').setAttribute('type', 'password')
+  } else {
+    document.getElementById('password').setAttribute('type', 'text')
+    document.getElementById('repeat_password').setAttribute('type', 'text')
+  }
+})
+
+watch(
+  () => form.value.repeat_password, 
+  (newValue) => {
+  if (newValue && newValue != form.value.password) diffPassword.value = false
+  else diffPassword.value = true
+})
 
 </script>
 
