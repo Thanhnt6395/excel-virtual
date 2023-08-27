@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 
-from .serializers import UserSerializer, ChangePasswordSerializer, RegisterSerializer, VerifyAgainSerializer
+from .serializers import LoginSerializer, UserSerializer, ChangePasswordSerializer, RegisterSerializer, VerifyAgainSerializer
 from .models import User
 
 
@@ -51,5 +51,16 @@ class VerifyAgain(GenericAPIView):
         if serializer.is_valid():
             serializer.save()
 
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
+      
+class LoginView(GenericAPIView):
+    serializer_class = LoginSerializer
+    
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
