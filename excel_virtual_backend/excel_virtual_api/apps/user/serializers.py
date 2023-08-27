@@ -17,8 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
     password = serializers.CharField(write_only=True, min_length=8)
-    first_name = serializers.CharField(max_length=50)
-    last_name = serializers.CharField(max_length=50)
+    first_name = serializers.CharField(max_length=50, required=False)
+    last_name = serializers.CharField(max_length=50, required=False)
     id = serializers.UUIDField(read_only=True)
 
     def create(self, validated_data):
