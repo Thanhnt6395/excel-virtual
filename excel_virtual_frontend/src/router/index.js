@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import LoginView from '../views/Login.vue'
 import RegisterView from '../views/Register.vue'
+import VerifyView from '../views/Verify.vue'
 
 const routes = [
   {
@@ -21,6 +22,12 @@ const routes = [
     path: '/register',
     name: 'register',
     component: RegisterView,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: '/verify/:token/:status',
+    name: 'verify',
+    component: VerifyView,
     meta: { requiresAuth: false },
   },
 ]

@@ -1,12 +1,12 @@
 
-from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 import jwt
 from rest_framework.generics import GenericAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 
-from .serializers import UserSerializer, ChangePasswordSerializer, RegisterSerializer
+from .serializers import UserSerializer, ChangePasswordSerializer, RegisterSerializer, VerifyAgainSerializer
 from .models import User
 
 
@@ -31,13 +31,25 @@ class UserVerification(GenericAPIView):
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms='HS256')
             user = User.objects.get(id=payload['user_id'])
             if not user:
-                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+                return HttpResponseRedirect(redirect_to=f'http://localhost:5173/verify/{token}/notFound')
             if not user.is_active:
                 user.is_active = True
                 user.save()
 
-            return redirect('https://www.google.com/')
+            return HttpResponseRedirect(redirect_to=f'http://localhost:5173/verify/{token}/success')
         except jwt.ExpiredSignatureError as e:
-            return Response({'error': 'Token expried'}, status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponseRedirect(redirect_to=f'http://localhost:5173/verify/{token}/expired')
         except jwt.exceptions.DecodeError as  decodeError:
-            return Response({'error': decodeError}, status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponseRedirect(redirect_to=f'http://localhost:5173/verify/{token}/decode')
+          
+          
+class VerifyAgain(GenericAPIView):
+    serializer_class = VerifyAgainSerializer
+    
+    def post(self, request):
+        serializer = VerifyAgainSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

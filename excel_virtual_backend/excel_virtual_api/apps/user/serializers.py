@@ -1,3 +1,5 @@
+from django.conf import settings
+import jwt
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from utils.choices import GenderChoices
@@ -63,3 +65,16 @@ class ChangePasswordSerializer(serializers.Serializer):
         instance.save()
         return instance
       
+class VerifyAgainSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    
+    def create(self, validated_data):
+        try:
+            payload = jwt.decode(validated_data.get('token'), settings.SECRET_KEY, options={"verify_exp": False}, algorithms='HS256')
+            user = User.objects.get(id=payload['user_id'])
+            username = f"{user.first_name if user.first_name else ''} {user.last_name if user.last_name else ''}"
+            token = RefreshToken.for_user(user).access_token
+            SendMail.send_mail_verify(SendMail, user.email, username, str(token))
+        except Exception as e:
+            raise e
+        return token
