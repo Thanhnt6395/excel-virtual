@@ -6,6 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from utils.choices import GenderChoices
 from django.utils.translation import gettext as _
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate
 
 from .models import User
 from utils.send_mail import SendMail
@@ -97,11 +98,11 @@ class LoginSerializer(serializers.Serializer):
         return super().validate(attrs)
     
     def create(self, validated_data):
-        user = User.objects.get(email=validated_data.get('email'))
+        email = validated_data.get('email')
+        password = validated_data.get('password')
+        user = authenticate(username=email, password=password)
         if not user:
-            raise AuthenticationFailed('User not found!')
-        if user.check_password(validated_data.get('password')):
-            raise AuthenticationFailed('Incorrect password!')
+            raise AuthenticationFailed('Email or Password incorrect!')
         
         refreshToken = RefreshToken.for_user(user)
         return {

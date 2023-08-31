@@ -61,21 +61,108 @@
               type="button" 
               class=" w-1/2 bg-blue-700 hover:bg-blue-500 text-white px-3 py-2 rounded uppercase mx-auto" 
               :class="[!allowClick ? 'opacity-50 cursor-not-allowed' : '']"  
-              @click="register"
+              @click="login"
             >Login</button>
           </div>
         </div>
       </div>
 
       <!-- Notifications -->
-      <div class=" absolute right-[2rem] bottom-0 transition-opacity transform duration-700 origin-left ease-linear" v-if="registStatus.status != ''">
-        <Notifications :status="registStatus.status">{{ registStatus.message }}</Notifications>
+      <div class=" absolute right-[2rem] bottom-0 transition-opacity transform duration-700 origin-left ease-linear" v-if="loginStatus.status != ''">
+        <Notifications :status="loginStatus.status">{{ loginStatus.message }}</Notifications>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
+import { ref, computed, watch } from 'vue';
+import axios from 'axios';
+import Notifications from '../components/Notifications.vue';
+import { useRouter } from 'vue-router';
+
+const form = ref({})
+const router = useRouter()
+const validation = ref({})
+const showPassword = ref(false)
+const allowClick = ref(true)
+const isLoading = ref(false)
+const loginStatus = ref({
+  status: '',
+  message: ''
+})
+
+watch(showPassword, (newValue) => {
+  if (!newValue) {
+    document.getElementById('password').setAttribute('type', 'password')
+  } else {
+    document.getElementById('password').setAttribute('type', 'text')
+  }
+})
+
+function onInput(e) {
+  let id = e.target.id
+  let value = e.target.value
+  if (!allowClick.value) allowClick.value = true
+  if (id == 'email') validation.value.email = isEmail(value)
+  else if (id.includes('password')) validation.value[id] = value.length < 8 ? false : true
+}
+
+function isEmail(email) {
+  if (!email || email == '') return false
+  const regex = new RegExp("^[\\w-_\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
+  return regex.test(email)
+}
+
+function isValidation() {
+  if (!form.value.email || !form.value.password) {
+    if (!form.value.email) {
+      validation.value.email = false
+      document.getElementById('email').focus()
+    } else {
+      validation.value.password = false
+      document.getElementById('password').focus()
+    }
+    allowClick.value = false
+    return false
+  }
+
+  for (const [k, v] of Object.entries(form.value)) {
+    if (['email', 'password'].includes(k) && !validation.value[k]) {
+      allowClick.value = false
+      return false
+    }
+  }
+  return true
+}
+
+async function login() {
+  if (!isValidation()) return false
+  isLoading.value = true
+  let formData = new FormData()
+  for (const [k, v] of Object.entries(form.value)) {
+    formData.append(k,v)
+  }
+
+  await axios.post('http://127.0.0.1:8000/api/user/login', formData)
+    .then((res) => {
+      console.log({res})
+      if (res.status == 200) {
+        router.push('/')
+      }
+    })
+    .catch((error) => {
+      console.log({error})
+      loginStatus.value.status = 'error'
+      loginStatus.value.message = error.response.data.detail
+    })
+
+  setTimeout(() => {
+    loginStatus.value.status = ''
+    loginStatus.value.message = ''
+  }, "3000");
+  isLoading.value = false
+}
 
 </script>
 

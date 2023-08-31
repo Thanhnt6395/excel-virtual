@@ -175,3 +175,4 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]

@@ -62,5 +62,12 @@ class LoginView(GenericAPIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            response = Response(serializer.data, status=status.HTTP_200_OK)
+            token = {
+                'access_token': serializer.data.get('access_token'),
+                'refresh_token': serializer.data.get('refresh_token'),
+            }
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
