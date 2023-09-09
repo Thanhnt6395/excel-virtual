@@ -17,7 +17,7 @@
             @click="sendVerifyAgain"
           >Send verify again</button>
         </div>
-        <div class="flex justify-center" :class="[status != 'success' && !isLoading ? 'hidden' : 'block']">
+        <div class="flex justify-center" :class="[status != 'success' && !isLoading ? 'block' : 'hidden']">
           <span class="relative flex h-5 w-5 mr-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-5 w-5 bg-sky-500"></span>

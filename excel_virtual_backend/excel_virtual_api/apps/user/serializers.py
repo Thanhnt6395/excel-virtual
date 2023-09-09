@@ -5,8 +5,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import AuthenticationFailed
 from utils.choices import GenderChoices
 from django.utils.translation import gettext as _
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
 
 from .models import User
 from utils.send_mail import SendMail
@@ -26,7 +25,6 @@ class RegisterSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
 
     def create(self, validated_data):
-        validated_data['password'] = make_password(validated_data['password'])
         try:
             user = User.objects.create_user(**validated_data)
             username = f"{user.first_name} {user.last_name}"
@@ -91,28 +89,15 @@ class LoginSerializer(serializers.Serializer):
     birthday = serializers.DateField(required=False, read_only=True)
     gender = serializers.ChoiceField(choices=GenderChoices.GENDER_IN_CHOICES, default=GenderChoices.OTHER, read_only=True)
     phone = serializers.CharField(required=False, read_only=True)
-    access_token = serializers.CharField(required=False, read_only=True)
-    refresh_token = serializers.CharField(required=False, read_only=True)
     
     def validate(self, attrs):
-        return super().validate(attrs)
-    
-    def create(self, validated_data):
-        email = validated_data.get('email')
-        password = validated_data.get('password')
-        user = authenticate(username=email, password=password)
+        email = attrs.get('email')
+        password = attrs.get('password')
+        user = User.objects.get(email=email)
         if not user:
-            raise AuthenticationFailed('Email or Password incorrect!')
-        
-        refreshToken = RefreshToken.for_user(user)
-        return {
-            'id': user.id,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'gender': user.gender,
-            'birthday': user.birthday,
-            'phone': user.phone,
-            'access_token': str(refreshToken.access_token),
-            'refresh_token': str(refreshToken),
-        }
+            raise AuthenticationFailed('User not found!')
+        if not user.is_active:
+            raise AuthenticationFailed("User hasn't activated yet!")
+        if not check_password(password, user.password):
+            raise AuthenticationFailed('Password incorrect!')
+        return user

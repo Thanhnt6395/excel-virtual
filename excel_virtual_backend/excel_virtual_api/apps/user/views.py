@@ -61,9 +61,9 @@ class LoginView(GenericAPIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            data = serializer.data
             
-            response = Response(serializer.data, status=status.HTTP_200_OK)
+            response = Response(data, status=status.HTTP_200_OK)
             token = {
                 'access_token': serializer.data.get('access_token'),
                 'refresh_token': serializer.data.get('refresh_token'),

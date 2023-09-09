@@ -1,8 +1,11 @@
 <template>
-  <h1>Home</h1>
+  <section id="home">
+    <NavBar></NavBar>
+  </section>
 </template>
 
 <script setup>
+import NavBar from '../components/NavBar.vue';
 
 </script>
 
