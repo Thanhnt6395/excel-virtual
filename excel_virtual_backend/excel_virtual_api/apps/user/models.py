@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .manager import CustomUserManager
 from utils.choices import GenderChoices
@@ -28,4 +29,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         
     def __str__(self) -> str:
         return self.email
+    
+    def getToken(self):
+        token = RefreshToken.for_user(self)
+        return {
+			"access_token": str(token.access_token),
+			"refresh_token": str(token)
+		}
+        
+    def getUsername(self):
+        return f"{self.first_name if self.first_name else ''} {self.last_name if self.last_name else ''}"
     

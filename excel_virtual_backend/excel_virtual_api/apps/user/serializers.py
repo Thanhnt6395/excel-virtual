@@ -1,3 +1,4 @@
+import json
 from django.conf import settings
 import jwt, datetime
 from rest_framework import serializers
@@ -16,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
 
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
@@ -83,12 +85,7 @@ class VerifyAgainSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, min_length=8)
-    id = serializers.UUIDField(format='hex', read_only=True)
-    first_name = serializers.CharField(required=False, read_only=True)
-    last_name = serializers.CharField(required=False, read_only=True)
-    birthday = serializers.DateField(required=False, read_only=True)
-    gender = serializers.ChoiceField(choices=GenderChoices.GENDER_IN_CHOICES, default=GenderChoices.OTHER, read_only=True)
-    phone = serializers.CharField(required=False, read_only=True)
+    tokens = serializers.CharField(read_only=True, max_length=255)
     
     def validate(self, attrs):
         email = attrs.get('email')
@@ -100,4 +97,8 @@ class LoginSerializer(serializers.Serializer):
             raise AuthenticationFailed("User hasn't activated yet!")
         if not check_password(password, user.password):
             raise AuthenticationFailed('Password incorrect!')
-        return user
+        return {
+          "email": user.email,
+          "username": user.getUsername(),
+          "tokens": json.dumps(user.getToken())
+        }

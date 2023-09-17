@@ -77,9 +77,10 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import axios from 'axios';
 import Notifications from '../components/Notifications.vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import axiosClient from '../utils/Axios'
 
 const form = ref({})
 const router = useRouter()
@@ -91,6 +92,7 @@ const loginStatus = ref({
   status: '',
   message: ''
 })
+const store = useStore()
 
 watch(showPassword, (newValue) => {
   if (!newValue) {
@@ -144,7 +146,7 @@ async function login() {
     formData.append(k,v)
   }
 
-  await axios.post('http://127.0.0.1:8000/api/user/login', formData)
+  await axiosClient.post('/user/login', formData)
     .then((res) => {
       console.log({res})
       if (res.status == 200) {

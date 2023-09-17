@@ -1,8 +1,8 @@
 <template>
   <section id="navbar">
-    <div class="grid grid-cols-9 gap-1 bg-white px-5 py-2">
-      <div class="col-span-5 sm:col-span-3 flex">
-        <div class="relative w-full">
+    <div class="grid grid-cols-9 gap-1 bg-white px-5 py-2 relative h-16">
+      <div class="col-span-5 sm:col-span-3 absolute translate-y-[-50%] top-[50%] left-[15px]">
+        <div class="relative h-full">
           <font-awesome-icon
             icon="fa-solid fa-bars"
             size="lg"
@@ -17,18 +17,18 @@
           />
           <router-link
             to="/"
-            class="uppercase text-gray-500 absolute translate-y-[-50%] top-[50%] left-20 w-auto font-bold"
-            >Excel Virtual</router-link
+            class=" text-gray-500 text-xl absolute translate-y-[-50%] top-[50%] left-20 w-auto font-light"
+            >Sheets</router-link
           >
         </div>
       </div>
-      <div class="col-span-4 sm:col-span-3 grid grid-cols-3 gap-2">
+      <div class="col-span-4 sm:col-span-3 grid grid-cols-3 gap-2 absolute translate-y-[-50%] top-[50%] right-[15px]">
         <div class="relative h-full col-span-2">
           <img
-            :src="linkIcon[currentLanguage]"
+            :src="currentIcon"
             alt=""
             id="icon-lang"
-            class="w-6 h-6 hover:cursor-pointer absolute translate-y-[-50%] top-[50%] right-0"
+            class="w-5 h-5 hover:cursor-pointer absolute translate-y-[-50%] top-[50%] right-0"
             @click="openLang = !openLang"
           />
           <div
@@ -41,18 +41,21 @@
                 v-for="(lang, index) in langs"
                 :key="index"
                 class="flex text-gray-600 font-thin hover:bg-gray-100 hover:rounded p-2 hover:cursor-pointer"
-                @click="changeLang(lang)"
+                @click="changeLang(lang.key)"
               >
-                <img :src="linkIcon[lang]" alt="" class="w-5 h-5 mr-2" />
-                {{ messages[currentLanguage].global[lang] }}
+                <img :src="lang.icon" alt="" class="w-5 h-5 mr-2" />
+                {{ lang.label }}
               </li>
             </ul>
           </div>
         </div>
-        <div class="col-auto relative h-full">User icon</div>
+        <div class="col-auto relative h-full hover:cursor-pointer">
+          <font-awesome-icon icon="fa-solid fa-circle-user" size="2xl" v-if="!user || !user.avatar || user.avatar == ''" />
+          <img :src="user.avatar" alt="" srcset="" v-else>
+        </div>
       </div>
-      <div class="col-span-9 sm:col-span-3" id="search-bar">
-        <div class="relative text-gray-400 focus-within:text-gray-600">
+      <div class="col-span-9 sm:col-span-3 absolute translate-y-[50%] bottom-[-50%] left-[15px] right-[15px] sm:left-1/3 sm:right-1/3 sm:bottom-[50%]" id="search-bar">
+        <div class="relative text-gray-400 focus-within:text-gray-600 h-full">
           <font-awesome-icon
             icon="fa-solid fa-magnifying-glass"
             class="text-gray-500 absolute w-6 h-6 translate-y-[-50%] top-[50%] left-3"
@@ -62,7 +65,7 @@
             type="text"
             name=""
             id="search"
-            placeholder="Search"
+            :placeholder="homepage._search"
           />
         </div>
       </div>
@@ -84,11 +87,11 @@
       <div class="border-b-[1px] border-b-gray-200 w-full grid grid-flow-row gap-1">
         <div class=" row-span-1 relative h-9">
           <font-awesome-icon icon="fa-solid fa-file-circle-plus" class=" text-gray-500 absolute translate-y-[-50%] top-[50%] left-[15px]" />
-          <span class="text-gray-500 absolute translate-y-[-50%] top-[50%] left-[40px] font-thin">{{ messages[currentLanguage].homepage._new }}</span>
+          <span class="text-gray-500 absolute translate-y-[-50%] top-[50%] left-[40px] font-thin">{{ homepage._new }}</span>
         </div>
         <div class=" row-span-1 relative h-9">
           <font-awesome-icon icon="fa-solid fa-box-archive" class=" text-gray-500 absolute translate-y-[-50%] top-[50%] left-[15px]" />
-          <span class="text-gray-500 absolute translate-y-[-50%] top-[50%] left-[40px] font-thin">{{ messages[currentLanguage].homepage.myFile }}</span>
+          <span class="text-gray-500 absolute translate-y-[-50%] top-[50%] left-[40px] font-thin">{{ homepage.myFile }}</span>
         </div>
       </div>
     </div>
@@ -96,35 +99,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import enMassages from "../assets/lang/en.js";
-import vnMessages from "../assets/lang/vn.js";
+import { ref, onMounted, computed } from "vue";
+import { mapState, useStore } from "vuex";
 
-const currentLanguage = ref("en");
-const linkIcon = ref({
-  en: "./src/assets/icons/flag-usa.svg",
-  vn: "./src/assets/icons/flag-vietnam.svg",
-});
-const langs = ref(["en", "vn"]);
-const messages = ref({
-  en: enMassages,
-  vn: vnMessages,
-});
 const openLang = ref(false);
 const openMenu = ref(false);
+const store = useStore()
+const currentIcon = computed(() => store.getters["messages/currentIcon"])
+const langs = store.getters["messages/langs"]
+const homepage = computed(() => store.getters["messages/byPage"]('homepage'))
+const props = defineProps({
+  user: Object
+})
 
 function changeLang(lang) {
-  currentLanguage.value = lang;
+  store.dispatch('messages/setCurrentLang', lang)
   openLang.value = false;
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener("click", (e) => {
     if ((!e.target.id || e.target.id != "icon-lang") && openLang.value == true)
       openLang.value = false;
     if ((!e.target.id || e.target.id != "icon-menu") && openMenu.value == true)
       openMenu.value = false;
   });
+  console.log({user: props.user})
 });
 </script>
 
